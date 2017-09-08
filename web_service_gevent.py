@@ -50,7 +50,7 @@ class WSGI():
                 res_body = "未找到该页面"
                 res_head = "HTTP/ 404 Forbidden\r\n"
                 res_head += "Content-Type:text/html;charset=utf-8\r\n"   
-                res_head += "Content-Length:%s\r\n" % (len(es_body.decode("utf-8")))
+                res_head += "Content-Length:%s\r\n" % (len(res_body.encode("utf-8")))
                 res_head += "\r\n"
                 msg = res_head + res_body
                 self.client_socket.send(msg.encode("utf-8"))
