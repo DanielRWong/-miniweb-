@@ -24,15 +24,16 @@ class WSGI():
         """等待客户端接入"""
         while True:
             # 为新接入的客户端创建一个套接字
-            self.client_socket, client_addr = self.server_socket.accept()
-            gevent.spawn(self.handle())
+            client_socket, client_addr = self.server_socket.accept()
+            g1 = gevent.spawn(self.handle, client_socket)
+            g1.join()
         # 关闭套接字
         self.server_socket.close()
 
     def handle(self):
         """处理客户端发来的数据并回复"""
         while True:
-            client_data =self.client_socket.recv(1024)
+            client_data =client_socket.recv(1024)
             # 判断客户端发来的数据是否为空，空表示客户端下线
             if not client_data:
                 break
@@ -53,7 +54,7 @@ class WSGI():
                 res_head += "Content-Length:%s\r\n" % (len(res_body.encode("utf-8")))
                 res_head += "\r\n"
                 msg = res_head + res_body
-                self.client_socket.send(msg.encode("utf-8"))
+                client_socket.send(msg.encode("utf-8"))
             else:
                 content = f.read()
                 res_body = content
@@ -61,10 +62,10 @@ class WSGI():
                 res_head += "Content-Type:text/html;charset=utf-8\r\n"   
                 res_head += "Content-Length:%s\r\n" % (len(res_body))
                 res_head += "\r\n"
-                self.client_socket.send(res_head.encode("utf-8"))
-                self.client_socket.send(res_body)
+                client_socket.send(res_head.encode("utf-8"))
+                client_socket.send(res_body)
         # 关闭为客户端服务的套接字
-        self.client_socket.close()
+        client_socket.close()
 
 
 def main():
